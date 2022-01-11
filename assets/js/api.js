@@ -1,23 +1,52 @@
-$(function(){
+let search = document.getElementById('search');
+let quantity = document.getElementById('quantity');
+let gifsEl = document.getElementById('gifs');
+let moreBtn = document.getElementById('moreBtn');
+let amount = +quantity.value
 
-	$.ajax({
-		url:'https://alunos.b7web.com.br/cinema/',
-		type:'GET',
-		dataType:'json',
-		beforeSend:function(){
-			$('.filmes').html('<div class="col-md-12">Carregando...</div>');
-		},
-		success:function(json) {
+function loadGifs() {
+  fetch(`https://g.tenor.com/v1/search?q=${search.value}&key=LIVDSRZULELA&limit=${amount}`)
+    .then((response) => {
+      return response.json();
+    })
+    .then((json) => {
+      showGifs(json)
+    })
+}
 
-			var html = '';
+function showGifs(jsonItems) {
+  let result = jsonItems['results'];
+  gifsEl.innerHTML = '';
+  for (let i in result) {
+    gifsEl.innerHTML += `
+      <div class="col-6">
+        <figure class="text-center rounded bg-white border shadow-sm">
+          <img class="img-fluid" src="${result[i]["media"][0]['gif']['url']}">
+          <figcapture><h6>${result[i].content_description}</h6></figcapture>
+        </figure>
+      </div>
+    `;
+  }
+  moreBtn.style.display = "inline-block"
+}
 
-			for(var i in json) {
-				html += '<div class="col-md-4"><div class="filme"><img src="'+json[i].avatar+'" />'+json[i].titulo+'</div></div>';
-			}
+function searchGifs(){
+  amount = 8
+  quantity.value = amount;
+  loadGifs()
+}
 
-			$('.filmes').html(html);
+function quantityGifs(){
+  amount = +quantity.value
+  loadGifs()
+}
 
-		}
-	});
+function moreGifs(){
+  amount = amount + 8
+  quantity.value = amount;
+  loadGifs()
+}
 
-});
+search.addEventListener('change', searchGifs);
+quantity.addEventListener('change', quantityGifs);
+moreBtn.addEventListener('click', moreGifs);
